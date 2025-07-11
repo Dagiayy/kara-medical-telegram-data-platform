@@ -1,0 +1,12 @@
+telethon
+python-dotenv
+fastapi
+uvicorn
+pandas
+sqlalchemy
+asyncpg
+dbt-core
+dbt-postgres
+ultralytics     # for YOLOv8
+psycopg2-binary
+dagster
