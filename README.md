@@ -1,7 +1,13 @@
+Here is your **final, polished `README.md`**, fully updated to reflect **all five tasks** — from data scraping to orchestration — for the **Kara Medical Telegram Data Platform**:
 
+---
+
+```md
 # 🏥 Kara Medical Telegram Data Platform
 
-A scalable data pipeline that **scrapes medical-related messages from Telegram**, stores them in **PostgreSQL**, and transforms the raw data into **clean, analytics-ready tables** using **dbt**. Ideal for monitoring pharmaceutical promotions, product trends, or public health insights in Ethiopia.
+A production-grade data platform that **scrapes medical-related messages from Telegram**, enriches media with **YOLOv8 object detection**, stores data in **PostgreSQL**, transforms it with **dbt**, serves insights via a **FastAPI Analytical API**, and orchestrates the entire pipeline using **Dagster**.
+
+Ideal for monitoring pharmaceutical promotions, tracking product trends, and deriving public health insights in Ethiopia.
 
 ---
 
@@ -15,30 +21,30 @@ kara-medical-telegram-data-platform/
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
-│
+
 ├── app/
 │   ├── **init**.py
 │   └── scraper/
 │       ├── config.py
 │       ├── scrape\_telegram.py
 │       └── load\_raw\_to\_pg.py
-│
+
 ├── data\_lake/
 │   └── raw/
 │       └── telegram\_messages/
 │           └── YYYY-MM-DD/
 │               └── channel.json
-│
-├── kara\_detection/             # 🧠 YOLOv8-based object detection pipeline
+
+├── kara\_detection/             # YOLOv8 object detection pipeline
 │   └── detect\_images.py
-│
-├── api/                        # 🆕 FastAPI Analytical API
+
+├── api/                        # FastAPI analytical API
 │   ├── main.py
 │   ├── crud.py
 │   ├── database.py
 │   └── schemas.py
-│
-├── kara\_dbt/
+
+├── kara\_dbt/                   # dbt transformation project
 │   ├── models/
 │   │   ├── staging/
 │   │   │   └── stg\_telegram\_messages.sql
@@ -49,6 +55,13 @@ kara-medical-telegram-data-platform/
 │   │   │   └── fct\_image\_detections.sql
 │   │   └── schema.yml
 │   └── dbt\_project.yml
+
+├── orchestrator/               # Dagster orchestration
+│   ├── **init**.py
+│   ├── pipeline.py
+│   ├── repository.py
+│   └── schedules.py
+
 └── README.md
 
 ````
@@ -57,14 +70,14 @@ kara-medical-telegram-data-platform/
 
 ## 🚀 Features
 
-* 🔍 Scrape public messages and media from **Telegram channels**
-* 📁 Store raw data in a **date-partitioned folder structure**
-* 🐘 Load raw JSON into a **PostgreSQL raw schema**
-* 🧹 Transform and validate data using **dbt**
-* 🧠 Enrich media with **YOLOv8 object detection**
-* 📊 Serve insights via a **FastAPI-based analytical API** (🆕 Task 4)
-* ✅ Built-in and custom **data quality tests**
-* 📦 Fully containerized with **Docker & Docker Compose**
+✅ **Telegram Message Scraper** – Collects public medical messages/media  
+✅ **Data Lake Storage** – Raw messages organized by date  
+✅ **PostgreSQL Integration** – Raw → structured tables  
+✅ **YOLOv8 Object Detection** – Media intelligence from images  
+✅ **DBT Transformations** – Clean, testable analytical models  
+✅ **FastAPI Analytical API** – RESTful endpoints for reporting  
+✅ **Dagster Orchestration** – Schedule, monitor, and manage pipeline  
+✅ **Dockerized Deployment** – For reproducibility and portability
 
 ---
 
@@ -77,10 +90,9 @@ git clone https://github.com/Dagiayy/kara-medical-telegram-data-platform.git
 cd kara-medical-telegram-data-platform
 ````
 
-### 2. Create a `.env` File
+### 2. Configure `.env`
 
 ```ini
-# .env
 TELEGRAM_API_ID=your_api_id
 TELEGRAM_API_HASH=your_api_hash
 
@@ -91,7 +103,7 @@ POSTGRES_PASSWORD=karapass
 
 ---
 
-## 🐳 Run via Docker (Optional but recommended)
+## 🐳 Run with Docker
 
 ```bash
 docker compose up --build
@@ -99,7 +111,7 @@ docker compose up --build
 
 ---
 
-## 🧪 Manual Workflow (For Local Testing)
+## 🧪 Manual Workflow
 
 ### 1. Install Python dependencies
 
@@ -113,13 +125,13 @@ pip install -r requirements.txt
 python app/scraper/scrape_telegram.py
 ```
 
-### 3. Load raw data to PostgreSQL
+### 3. Load raw data into PostgreSQL
 
 ```bash
 python app/scraper/load_raw_to_pg.py
 ```
 
-### 4. Run YOLOv8 Object Detection (Task 3)
+### 4. Detect objects in images (YOLOv8)
 
 ```bash
 python kara_detection/detect_images.py
@@ -132,57 +144,89 @@ cd kara_dbt
 dbt run
 ```
 
-### 6. Run dbt tests
+### 6. Test data models
 
 ```bash
 dbt test
 ```
 
-### 7. Start FastAPI Analytical API (🆕 Task 4)
+### 7. Start FastAPI server
 
 ```bash
 uvicorn api.main:app --reload
 ```
 
-Then visit:
+Visit:
 
-* Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+* Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
 * Example: [http://localhost:8000/api/reports/top-products?limit=5](http://localhost:8000/api/reports/top-products?limit=5)
+
+### 8. Run Dagster orchestration UI
+
+```bash
+dagster dev -f orchestrator/repository.py
+```
+
+Open Dagster UI: [http://localhost:3000](http://localhost:3000)
 
 ---
 
 ## 📊 DBT Models Overview
 
-* **Staging**
+**Staging:**
 
-  * `stg_telegram_messages.sql`: Cleans raw JSON data
+* `stg_telegram_messages`: Cleans and prepares raw Telegram data
 
-* **Data Marts**
+**Data Marts:**
 
-  * `dim_channels`: Telegram channel metadata
-  * `dim_dates`: Date dimension for time-series
-  * `fct_messages`: Fact table with message text, media, and metadata
-  * `fct_image_detections`: Detected objects from media images linked to messages
-
----
-
-## 🔌 Analytical API Endpoints
-
-| Endpoint                                     | Description                |
-| -------------------------------------------- | -------------------------- |
-| `GET /api/reports/top-products?limit=10`     | Top mentioned products     |
-| `GET /api/channels/{channel_name}/activity`  | Daily activity per channel |
-| `GET /api/search/messages?query=paracetamol` | Search messages by keyword |
+* `dim_channels`: Channel metadata
+* `dim_dates`: Time dimension
+* `fct_messages`: Cleaned message-level data
+* `fct_image_detections`: Object detection results linked to messages
 
 ---
 
-## ✅ Tests & Validation
+## 🔌 API Endpoints
 
-* `unique`, `not_null` on primary keys
-* Custom test:
+| Endpoint                                 | Description                     |
+| ---------------------------------------- | ------------------------------- |
+| `/api/reports/top-products?limit=10`     | Most frequently mentioned drugs |
+| `/api/channels/{channel_name}/activity`  | Posting activity per channel    |
+| `/api/search/messages?query=paracetamol` | Search messages by keyword      |
+
+---
+
+## ⏱️ Orchestration: Dagster Pipeline
+
+**Ops:**
+
+* `scrape_telegram_data()`
+* `load_raw_to_postgres()`
+* `run_dbt_transformations()`
+* `run_yolo_enrichment()`
+
+**Schedule:** Daily at 6:00 AM (configurable)
+
+```bash
+dagster dev
+```
+
+---
+
+## ✅ Data Quality Checks
+
+* `not_null`, `unique` constraints
+* Custom expression:
 
 ```sql
 expression_is_true: message_length > 0
+```
+
+Docs:
+
+```bash
+dbt docs generate
+dbt docs serve
 ```
 
 ---
@@ -199,17 +243,17 @@ expression_is_true: message_length > 0
 
 ## 🧠 Future Enhancements
 
-* 🔔 Real-time alerts for new products
-* 📊 BI Dashboard (Metabase / Grafana)
-* 🧼 Anomaly detection and NER (drug names, brands)
-* 🎯 Object-specific trends from YOLOv8 detections
-* 🧠 **Extend API with more endpoints (e.g., drugs by sentiment, top emerging products)** (🆕)
+* 📡 Real-time alerts for emerging drugs/products
+* 📊 BI dashboards (Metabase, Grafana)
+* 🧬 NER for medicine/brand extraction
+* 📦 Media classification with AI
+* 📈 Time-based object detection trend analytics
 
 ---
 
 ## 📄 License
 
-MIT License. See [`LICENSE`](./LICENSE) file for details.
+MIT License – See [`LICENSE`](./LICENSE)
 
 ---
 
