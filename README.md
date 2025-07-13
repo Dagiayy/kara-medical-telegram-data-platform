@@ -1,7 +1,4 @@
 
-### ✅ Updated `README.md` (with Task 3)
-
-```md
 # 🏥 Kara Medical Telegram Data Platform
 
 A scalable data pipeline that **scrapes medical-related messages from Telegram**, stores them in **PostgreSQL**, and transforms the raw data into **clean, analytics-ready tables** using **dbt**. Ideal for monitoring pharmaceutical promotions, product trends, or public health insights in Ethiopia.
@@ -32,8 +29,14 @@ kara-medical-telegram-data-platform/
 │           └── YYYY-MM-DD/
 │               └── channel.json
 │
-├── kara\_detection/             # 🆕 YOLOv8-based object detection pipeline
-│   └── detect\_images.py        # Detects objects in scraped Telegram images
+├── kara\_detection/             # 🧠 YOLOv8-based object detection pipeline
+│   └── detect\_images.py
+│
+├── api/                        # 🆕 FastAPI Analytical API
+│   ├── main.py
+│   ├── crud.py
+│   ├── database.py
+│   └── schemas.py
 │
 ├── kara\_dbt/
 │   ├── models/
@@ -43,7 +46,7 @@ kara-medical-telegram-data-platform/
 │   │   │   ├── fct\_messages.sql
 │   │   │   ├── dim\_channels.sql
 │   │   │   ├── dim\_dates.sql
-│   │   │   └── fct\_image\_detections.sql   # 🆕 DBT model for object detection results
+│   │   │   └── fct\_image\_detections.sql
 │   │   └── schema.yml
 │   └── dbt\_project.yml
 └── README.md
@@ -58,7 +61,8 @@ kara-medical-telegram-data-platform/
 * 📁 Store raw data in a **date-partitioned folder structure**
 * 🐘 Load raw JSON into a **PostgreSQL raw schema**
 * 🧹 Transform and validate data using **dbt**
-* 🧠 Enrich media with **YOLOv8 object detection** (🆕 Task 3)
+* 🧠 Enrich media with **YOLOv8 object detection**
+* 📊 Serve insights via a **FastAPI-based analytical API** (🆕 Task 4)
 * ✅ Built-in and custom **data quality tests**
 * 📦 Fully containerized with **Docker & Docker Compose**
 
@@ -93,12 +97,6 @@ POSTGRES_PASSWORD=karapass
 docker compose up --build
 ```
 
-This will:
-
-* Build the scraper app container
-* Spin up PostgreSQL
-* Automatically run the scraping process (with cron or manual trigger)
-
 ---
 
 ## 🧪 Manual Workflow (For Local Testing)
@@ -121,19 +119,11 @@ python app/scraper/scrape_telegram.py
 python app/scraper/load_raw_to_pg.py
 ```
 
-### 4. Run YOLOv8 Object Detection (🆕 Task 3)
+### 4. Run YOLOv8 Object Detection (Task 3)
 
 ```bash
 python kara_detection/detect_images.py
 ```
-
-This script:
-
-* Detects objects in scraped Telegram images using YOLOv8
-* Saves object class names and confidence scores into PostgreSQL
-* Links each detection back to `fct_messages`
-
-> ⚠️ Make sure your images are stored and `images_table` is populated with message associations before running.
 
 ### 5. Run dbt transformations
 
@@ -148,6 +138,17 @@ dbt run
 dbt test
 ```
 
+### 7. Start FastAPI Analytical API (🆕 Task 4)
+
+```bash
+uvicorn api.main:app --reload
+```
+
+Then visit:
+
+* Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+* Example: [http://localhost:8000/api/reports/top-products?limit=5](http://localhost:8000/api/reports/top-products?limit=5)
+
 ---
 
 ## 📊 DBT Models Overview
@@ -161,23 +162,27 @@ dbt test
   * `dim_channels`: Telegram channel metadata
   * `dim_dates`: Date dimension for time-series
   * `fct_messages`: Fact table with message text, media, and metadata
-  * `fct_image_detections`: 🆕 Detected objects from media images linked to messages
+  * `fct_image_detections`: Detected objects from media images linked to messages
+
+---
+
+## 🔌 Analytical API Endpoints
+
+| Endpoint                                     | Description                |
+| -------------------------------------------- | -------------------------- |
+| `GET /api/reports/top-products?limit=10`     | Top mentioned products     |
+| `GET /api/channels/{channel_name}/activity`  | Daily activity per channel |
+| `GET /api/search/messages?query=paracetamol` | Search messages by keyword |
 
 ---
 
 ## ✅ Tests & Validation
 
 * `unique`, `not_null` on primary keys
-* Custom tests:
+* Custom test:
 
-  ```sql
-  expression_is_true: message_length > 0
-  ```
-* Run:
-
-```bash
-dbt docs generate
-dbt docs serve
+```sql
+expression_is_true: message_length > 0
 ```
 
 ---
@@ -197,8 +202,8 @@ dbt docs serve
 * 🔔 Real-time alerts for new products
 * 📊 BI Dashboard (Metabase / Grafana)
 * 🧼 Anomaly detection and NER (drug names, brands)
-* 🎯 **Object-specific trends** from YOLOv8 detections (🆕)
-* 📦 Auto-tagging and media classification using AI
+* 🎯 Object-specific trends from YOLOv8 detections
+* 🧠 **Extend API with more endpoints (e.g., drugs by sentiment, top emerging products)** (🆕)
 
 ---
 
@@ -217,9 +222,3 @@ MIT License. See [`LICENSE`](./LICENSE) file for details.
 
 ---
 
-### ✅ Suggested Commit Message for README Update:
-
-```bash
-git add README.md
-git commit -m "Update README to include Task 3: YOLOv8-based object detection pipeline"
-````
