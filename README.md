@@ -1,7 +1,7 @@
 
 # Kara Medical Telegram Data Platform
 
-A scalable, containerized data pipeline that scrapes messages from Telegram using Python, stores the data in PostgreSQL, and prepares it for downstream analytics or monitoring.
+A scalable data pipeline that scrapes messages from Ethiopian Telegram medical-related channels using Python, loads them into PostgreSQL, and transforms them using **dbt** for clean, trusted analytics-ready data.
 
 ---
 
@@ -10,16 +10,22 @@ A scalable, containerized data pipeline that scrapes messages from Telegram usin
 ```
 
 kara-medical-telegram-data-platform/
-├── .gitignore
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
+├── .env.example                # Template for environment variables
+├── data\_lake/                 # Stores raw scraped Telegram data as JSON
+│   └── raw/
+├── kara\_dbt/                  # dbt project folder for modeling & transformation
+│   ├── models/
+│   │   ├── staging/
+│   │   ├── marts/
+│   │   └── example/
+│   └── dbt\_project.yml
 ├── app/
-│   ├── **init**.py
 │   └── scraper/
-│       └── main.py
-└── docker/
-└── postgres
+│       ├── config.py          # Loads credentials & settings from .env
+│       ├── scrape\_telegram.py # Collects raw messages from Telegram
+│       └── load\_raw\_to\_pg.py  # Loads raw JSON into Postgres raw\.telegram\_messages
+├── requirements.txt
+└── README.md
 
 ````
 
@@ -27,55 +33,42 @@ kara-medical-telegram-data-platform/
 
 ## 🚀 Features
 
-- 🔍 Scrapes messages from Telegram channels or groups
-- 🐘 Stores structured data in PostgreSQL
-- 🐳 Fully containerized with Docker and Docker Compose
-- 🔐 Environment variables managed securely via `.env` file
-- 🔄 Easily extendable for ETL, alerts, or dashboards
+- 🔍 Scrape messages from curated Telegram channels
+- 💾 Save scraped messages locally in a structured JSON format
+- 🐘 Load raw data into a PostgreSQL `raw.telegram_messages` table
+- 🔄 Use **dbt** to transform raw data into analytics-friendly star schema models
+- ✅ Test your models with built-in and custom dbt tests
+- 📊 Future-ready for dashboards, APIs, and alerts
 
 ---
 
 ## 🛠️ Setup & Usage
 
 ### 1. Clone the repository
+
 ```bash
 git clone https://github.com/Dagiayy/kara-medical-telegram-data-platform.git
 cd kara-medical-telegram-data-platform
 ````
 
-### 2. Add your `.env` file
+---
 
-Create a `.env` file in the project root with the following:
+### 2. Create a `.env` file
+
+Create a file named `.env` in the root directory based on `.env.example`:
 
 ```env
 TELEGRAM_API_ID=your_api_id
 TELEGRAM_API_HASH=your_api_hash
-POSTGRES_DB=your_db
-POSTGRES_USER=your_user
-POSTGRES_PASSWORD=your_password
-```
 
-### 3. Build and Run with Docker
-
-```bash
-docker compose up --build
-```
-
-### 4. Run the Scraper Manually (Optional)
-
-```bash
-docker exec -it <app_container_name> python app/scraper/main.py
+POSTGRES_USER=karauser
+POSTGRES_PASSWORD=karapass
+POSTGRES_DB=kara_db
 ```
 
 ---
 
-## 📥 Dependencies
-
-* Python (requests, telethon, psycopg2, etc.)
-* PostgreSQL
-* Docker & Docker Compose
-
-Install manually (if running outside Docker):
+### 3. Install Python dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -83,25 +76,95 @@ pip install -r requirements.txt
 
 ---
 
-## 📊 Future Enhancements
+### 4. Run Telegram Scraper
 
-* Add data cleaning and transformation layer using dbt or Pandas
-* Add visualization dashboard (e.g., Metabase, Grafana)
-* Build an API for accessing the stored Telegram data
-* Implement data validation and logging
+```bash
+python app/scraper/scrape_telegram.py
+```
+
+This saves JSON files to:
+`data_lake/raw/telegram_messages/YYYY-MM-DD/*.json`
+
+---
+
+### 5. Load raw JSON into PostgreSQL
+
+```bash
+python app/scraper/load_raw_to_pg.py
+```
+
+This script loads Telegram messages into the `raw.telegram_messages` table.
+
+---
+
+### 6. Initialize & run dbt models
+
+```bash
+cd kara_dbt
+dbt run
+```
+
+This creates `analytics.fct_messages`, `dim_channels`, and `dim_dates` using transformations on the raw data.
+
+---
+
+### 7. Run dbt tests
+
+```bash
+dbt test
+```
+
+This will run:
+
+* Built-in tests: `unique`, `not_null`
+* Custom expression tests (e.g., message length > 0)
+* Business logic validations (e.g., message must have text or media)
+
+---
+
+## 📊 dbt Star Schema
+
+* **`dim_channels`** – Unique list of Telegram channels
+* **`dim_dates`** – Calendar table for analysis
+* **`fct_messages`** – Fact table with detailed metrics per message (text length, media presence, etc.)
+
+---
+
+## 🧪 Test Coverage
+
+* `unique` and `not_null` for all primary keys
+* Expression test: `message_length > 0`
+* Custom test: ensure no empty messages (no text AND no media)
+
+---
+
+## 📥 Dependencies
+
+* Python: `telethon`, `psycopg2`, `tesserocr`, `Pillow`, `python-dotenv`
+* PostgreSQL
+* dbt (`pip install dbt-postgres`)
+* Optional: Docker (coming soon)
+
+---
+
+## 🛤 Future Enhancements
+
+* 🔁 Add scheduler (e.g., Airflow or cron)
+* 📊 Add dashboard (e.g., Metabase, Superset)
+* ⚙️ REST API for accessing structured data
+* 🧹 Add advanced NLP cleaning and deduplication
 
 ---
 
 ## 📄 License
 
-MIT License. See `LICENSE` file for details.
+MIT License. See `LICENSE` for details.
 
 ---
 
 ## 👨‍💻 Author
 
-* **Dagmawi Ayenew**
-  [GitHub](https://https://github.com/Dagiayy/creditrust-complaint-ra) 
+**Dagmawi Ayenew**
+GitHub: [Dagiayy](https://github.com/Dagiayy)
 
 ```
-
