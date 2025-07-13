@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: dim_channels
+    description: "Unique list of Telegram channels"
+
+  - name: dim_dates
+    description: "Date dimension for message timestamps"
+    columns:
+      - name: date_id
+        description: "Primary key"
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_messages
+    description: "Fact table containing Telegram messages"
+    columns:
+      - name: message_id
+        tests:
+          - unique
+          - not_null
+      - name: message_length
+        description: "Message length must be > 0"
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "message_length > 0"

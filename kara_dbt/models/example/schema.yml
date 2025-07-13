@@ -1,0 +1,44 @@
+version: 2
+
+models:
+  - name: fct_messages
+    description: "Fact table containing Telegram messages with details and foreign keys"
+    columns:
+      - name: id
+        description: "Unique message identifier"
+        tests:
+          - unique
+          - not_null
+
+      - name: date
+        description: "Timestamp when the message was posted"
+        tests:
+          - not_null
+
+      - name: sender_id
+        description: "ID of the user who sent the message"
+
+      - name: text
+        description: "Text content of the message"
+
+      - name: media_type
+        description: "Type of media attached to the message (photo, document, etc.)"
+
+      - name: media_url
+        description: "URL or path to the media file"
+
+      - name: media_size_kb
+        description: "Size of media in kilobytes"
+
+      - name: width
+        description: "Width of the media in pixels (if applicable)"
+
+      - name: height
+        description: "Height of the media in pixels (if applicable)"
+
+      - name: channel
+        description: "Telegram channel name where the message was posted"
+
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "not ((text is null or text = '') and media_type is null)"
