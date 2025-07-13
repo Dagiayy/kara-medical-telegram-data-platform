@@ -1,4 +1,7 @@
 
+### ✅ Updated `README.md` (with Task 3)
+
+```md
 # 🏥 Kara Medical Telegram Data Platform
 
 A scalable data pipeline that **scrapes medical-related messages from Telegram**, stores them in **PostgreSQL**, and transforms the raw data into **clean, analytics-ready tables** using **dbt**. Ideal for monitoring pharmaceutical promotions, product trends, or public health insights in Ethiopia.
@@ -8,38 +11,44 @@ A scalable data pipeline that **scrapes medical-related messages from Telegram**
 ## 📁 Project Structure
 
 ```
+
 kara-medical-telegram-data-platform/
-├── .env                         # Environment variables (API keys, DB credentials)
+├── .env
 ├── .gitignore
-├── Dockerfile                   # Container definition for scraper app
-├── docker-compose.yml           # Services orchestration: scraper, PostgreSQL
-├── requirements.txt             # Python dependencies
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
 │
 ├── app/
-│   ├── __init__.py
+│   ├── **init**.py
 │   └── scraper/
-│       ├── config.py            # Loads environment variables
-│       ├── scrape_telegram.py   # Telegram scraping logic
-│       └── load_raw_to_pg.py    # Loads raw JSON to PostgreSQL
+│       ├── config.py
+│       ├── scrape\_telegram.py
+│       └── load\_raw\_to\_pg.py
 │
-├── data_lake/
+├── data\_lake/
 │   └── raw/
-│       └── telegram_messages/
+│       └── telegram\_messages/
 │           └── YYYY-MM-DD/
 │               └── channel.json
 │
-├── kara_dbt/                    # DBT project for transforming raw data
+├── kara\_detection/             # 🆕 YOLOv8-based object detection pipeline
+│   └── detect\_images.py        # Detects objects in scraped Telegram images
+│
+├── kara\_dbt/
 │   ├── models/
 │   │   ├── staging/
-│   │   │   └── stg_telegram_messages.sql
+│   │   │   └── stg\_telegram\_messages.sql
 │   │   ├── marts/
-│   │   │   ├── fct_messages.sql
-│   │   │   ├── dim_channels.sql
-│   │   │   └── dim_dates.sql
+│   │   │   ├── fct\_messages.sql
+│   │   │   ├── dim\_channels.sql
+│   │   │   ├── dim\_dates.sql
+│   │   │   └── fct\_image\_detections.sql   # 🆕 DBT model for object detection results
 │   │   └── schema.yml
-│   └── dbt_project.yml
+│   └── dbt\_project.yml
 └── README.md
-```
+
+````
 
 ---
 
@@ -49,6 +58,7 @@ kara-medical-telegram-data-platform/
 * 📁 Store raw data in a **date-partitioned folder structure**
 * 🐘 Load raw JSON into a **PostgreSQL raw schema**
 * 🧹 Transform and validate data using **dbt**
+* 🧠 Enrich media with **YOLOv8 object detection** (🆕 Task 3)
 * ✅ Built-in and custom **data quality tests**
 * 📦 Fully containerized with **Docker & Docker Compose**
 
@@ -61,7 +71,7 @@ kara-medical-telegram-data-platform/
 ```bash
 git clone https://github.com/Dagiayy/kara-medical-telegram-data-platform.git
 cd kara-medical-telegram-data-platform
-```
+````
 
 ### 2. Create a `.env` File
 
@@ -74,8 +84,6 @@ POSTGRES_DB=kara_db
 POSTGRES_USER=karauser
 POSTGRES_PASSWORD=karapass
 ```
-
-> ✅ Make sure `.env` is listed in `.gitignore`.
 
 ---
 
@@ -113,14 +121,28 @@ python app/scraper/scrape_telegram.py
 python app/scraper/load_raw_to_pg.py
 ```
 
-### 4. Run dbt transformations
+### 4. Run YOLOv8 Object Detection (🆕 Task 3)
+
+```bash
+python kara_detection/detect_images.py
+```
+
+This script:
+
+* Detects objects in scraped Telegram images using YOLOv8
+* Saves object class names and confidence scores into PostgreSQL
+* Links each detection back to `fct_messages`
+
+> ⚠️ Make sure your images are stored and `images_table` is populated with message associations before running.
+
+### 5. Run dbt transformations
 
 ```bash
 cd kara_dbt
 dbt run
 ```
 
-### 5. Run dbt tests
+### 6. Run dbt tests
 
 ```bash
 dbt test
@@ -133,26 +155,30 @@ dbt test
 * **Staging**
 
   * `stg_telegram_messages.sql`: Cleans raw JSON data
+
 * **Data Marts**
 
   * `dim_channels`: Telegram channel metadata
   * `dim_dates`: Date dimension for time-series
   * `fct_messages`: Fact table with message text, media, and metadata
+  * `fct_image_detections`: 🆕 Detected objects from media images linked to messages
 
-### ✅ Tests & Validation
+---
+
+## ✅ Tests & Validation
 
 * `unique`, `not_null` on primary keys
-* Custom test:
+* Custom tests:
 
   ```sql
   expression_is_true: message_length > 0
   ```
-* Docs:
+* Run:
 
-  ```bash
-  dbt docs generate
-  dbt docs serve
-  ```
+```bash
+dbt docs generate
+dbt docs serve
+```
 
 ---
 
@@ -168,9 +194,11 @@ dbt test
 
 ## 🧠 Future Enhancements
 
-* 🔔 Add real-time alerts (e.g., new product promotion)
-* 📊 Add BI dashboard (Metabase / Grafana)
-* 🧼 Add anomaly detection and entity recognition (e.g., drugs mentioned)
+* 🔔 Real-time alerts for new products
+* 📊 BI Dashboard (Metabase / Grafana)
+* 🧼 Anomaly detection and NER (drug names, brands)
+* 🎯 **Object-specific trends** from YOLOv8 detections (🆕)
+* 📦 Auto-tagging and media classification using AI
 
 ---
 
@@ -185,5 +213,13 @@ MIT License. See [`LICENSE`](./LICENSE) file for details.
 **Dagmawi Ayenew**
 🔗 [GitHub](https://github.com/Dagiayy)
 
+````
+
 ---
 
+### ✅ Suggested Commit Message for README Update:
+
+```bash
+git add README.md
+git commit -m "Update README to include Task 3: YOLOv8-based object detection pipeline"
+````
