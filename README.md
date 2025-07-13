@@ -1,8 +1,4 @@
-Here is your **final, polished `README.md`**, fully updated to reflect **all five tasks** — from data scraping to orchestration — for the **Kara Medical Telegram Data Platform**:
 
----
-
-```md
 # 🏥 Kara Medical Telegram Data Platform
 
 A production-grade data platform that **scrapes medical-related messages from Telegram**, enriches media with **YOLOv8 object detection**, stores data in **PostgreSQL**, transforms it with **dbt**, serves insights via a **FastAPI Analytical API**, and orchestrates the entire pipeline using **Dagster**.
@@ -37,6 +33,7 @@ kara-medical-telegram-data-platform/
 
 ├── kara\_detection/             # YOLOv8 object detection pipeline
 │   └── detect\_images.py
+
 
 ├── api/                        # FastAPI analytical API
 │   ├── main.py
