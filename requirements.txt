@@ -10,4 +10,5 @@ dbt-postgres
 ultralytics     # for YOLOv8
 psycopg2-binary
 dagster
-
+dagster
+dagster-webserver
