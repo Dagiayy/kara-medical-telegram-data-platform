@@ -1,30 +1,51 @@
 
-# Kara Medical Telegram Data Platform
+### ✅ Updated `README.md` (with Task 3)
 
-A scalable data pipeline that scrapes messages from Ethiopian Telegram medical-related channels using Python, loads them into PostgreSQL, and transforms them using **dbt** for clean, trusted analytics-ready data.
+```md
+# 🏥 Kara Medical Telegram Data Platform
+
+A scalable data pipeline that **scrapes medical-related messages from Telegram**, stores them in **PostgreSQL**, and transforms the raw data into **clean, analytics-ready tables** using **dbt**. Ideal for monitoring pharmaceutical promotions, product trends, or public health insights in Ethiopia.
 
 ---
 
-## 📦 Project Structure
+## 📁 Project Structure
 
 ```
 
 kara-medical-telegram-data-platform/
-├── .env.example                # Template for environment variables
-├── data\_lake/                 # Stores raw scraped Telegram data as JSON
+├── .env
+├── .gitignore
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+│
+├── app/
+│   ├── **init**.py
+│   └── scraper/
+│       ├── config.py
+│       ├── scrape\_telegram.py
+│       └── load\_raw\_to\_pg.py
+│
+├── data\_lake/
 │   └── raw/
-├── kara\_dbt/                  # dbt project folder for modeling & transformation
+│       └── telegram\_messages/
+│           └── YYYY-MM-DD/
+│               └── channel.json
+│
+├── kara\_detection/             # 🆕 YOLOv8-based object detection pipeline
+│   └── detect\_images.py        # Detects objects in scraped Telegram images
+│
+├── kara\_dbt/
 │   ├── models/
 │   │   ├── staging/
+│   │   │   └── stg\_telegram\_messages.sql
 │   │   ├── marts/
-│   │   └── example/
+│   │   │   ├── fct\_messages.sql
+│   │   │   ├── dim\_channels.sql
+│   │   │   ├── dim\_dates.sql
+│   │   │   └── fct\_image\_detections.sql   # 🆕 DBT model for object detection results
+│   │   └── schema.yml
 │   └── dbt\_project.yml
-├── app/
-│   └── scraper/
-│       ├── config.py          # Loads credentials & settings from .env
-│       ├── scrape\_telegram.py # Collects raw messages from Telegram
-│       └── load\_raw\_to\_pg.py  # Loads raw JSON into Postgres raw\.telegram\_messages
-├── requirements.txt
 └── README.md
 
 ````
@@ -33,138 +54,172 @@ kara-medical-telegram-data-platform/
 
 ## 🚀 Features
 
-- 🔍 Scrape messages from curated Telegram channels
-- 💾 Save scraped messages locally in a structured JSON format
-- 🐘 Load raw data into a PostgreSQL `raw.telegram_messages` table
-- 🔄 Use **dbt** to transform raw data into analytics-friendly star schema models
-- ✅ Test your models with built-in and custom dbt tests
-- 📊 Future-ready for dashboards, APIs, and alerts
+* 🔍 Scrape public messages and media from **Telegram channels**
+* 📁 Store raw data in a **date-partitioned folder structure**
+* 🐘 Load raw JSON into a **PostgreSQL raw schema**
+* 🧹 Transform and validate data using **dbt**
+* 🧠 Enrich media with **YOLOv8 object detection** (🆕 Task 3)
+* ✅ Built-in and custom **data quality tests**
+* 📦 Fully containerized with **Docker & Docker Compose**
 
 ---
 
-## 🛠️ Setup & Usage
+## 🛠️ Setup Instructions
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Dagiayy/kara-medical-telegram-data-platform.git
 cd kara-medical-telegram-data-platform
 ````
 
----
+### 2. Create a `.env` File
 
-### 2. Create a `.env` file
-
-Create a file named `.env` in the root directory based on `.env.example`:
-
-```env
+```ini
+# .env
 TELEGRAM_API_ID=your_api_id
 TELEGRAM_API_HASH=your_api_hash
 
+POSTGRES_DB=kara_db
 POSTGRES_USER=karauser
 POSTGRES_PASSWORD=karapass
-POSTGRES_DB=kara_db
 ```
 
 ---
 
-### 3. Install Python dependencies
+## 🐳 Run via Docker (Optional but recommended)
+
+```bash
+docker compose up --build
+```
+
+This will:
+
+* Build the scraper app container
+* Spin up PostgreSQL
+* Automatically run the scraping process (with cron or manual trigger)
+
+---
+
+## 🧪 Manual Workflow (For Local Testing)
+
+### 1. Install Python dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-### 4. Run Telegram Scraper
+### 2. Scrape Telegram messages
 
 ```bash
 python app/scraper/scrape_telegram.py
 ```
 
-This saves JSON files to:
-`data_lake/raw/telegram_messages/YYYY-MM-DD/*.json`
-
----
-
-### 5. Load raw JSON into PostgreSQL
+### 3. Load raw data to PostgreSQL
 
 ```bash
 python app/scraper/load_raw_to_pg.py
 ```
 
-This script loads Telegram messages into the `raw.telegram_messages` table.
+### 4. Run YOLOv8 Object Detection (🆕 Task 3)
 
----
+```bash
+python kara_detection/detect_images.py
+```
 
-### 6. Initialize & run dbt models
+This script:
+
+* Detects objects in scraped Telegram images using YOLOv8
+* Saves object class names and confidence scores into PostgreSQL
+* Links each detection back to `fct_messages`
+
+> ⚠️ Make sure your images are stored and `images_table` is populated with message associations before running.
+
+### 5. Run dbt transformations
 
 ```bash
 cd kara_dbt
 dbt run
 ```
 
-This creates `analytics.fct_messages`, `dim_channels`, and `dim_dates` using transformations on the raw data.
-
----
-
-### 7. Run dbt tests
+### 6. Run dbt tests
 
 ```bash
 dbt test
 ```
 
-This will run:
+---
 
-* Built-in tests: `unique`, `not_null`
-* Custom expression tests (e.g., message length > 0)
-* Business logic validations (e.g., message must have text or media)
+## 📊 DBT Models Overview
+
+* **Staging**
+
+  * `stg_telegram_messages.sql`: Cleans raw JSON data
+
+* **Data Marts**
+
+  * `dim_channels`: Telegram channel metadata
+  * `dim_dates`: Date dimension for time-series
+  * `fct_messages`: Fact table with message text, media, and metadata
+  * `fct_image_detections`: 🆕 Detected objects from media images linked to messages
 
 ---
 
-## 📊 dbt Star Schema
+## ✅ Tests & Validation
 
-* **`dim_channels`** – Unique list of Telegram channels
-* **`dim_dates`** – Calendar table for analysis
-* **`fct_messages`** – Fact table with detailed metrics per message (text length, media presence, etc.)
+* `unique`, `not_null` on primary keys
+* Custom tests:
 
----
+  ```sql
+  expression_is_true: message_length > 0
+  ```
+* Run:
 
-## 🧪 Test Coverage
-
-* `unique` and `not_null` for all primary keys
-* Expression test: `message_length > 0`
-* Custom test: ensure no empty messages (no text AND no media)
-
----
-
-## 📥 Dependencies
-
-* Python: `telethon`, `psycopg2`, `tesserocr`, `Pillow`, `python-dotenv`
-* PostgreSQL
-* dbt (`pip install dbt-postgres`)
-* Optional: Docker (coming soon)
+```bash
+dbt docs generate
+dbt docs serve
+```
 
 ---
 
-## 🛤 Future Enhancements
+## 🔍 Example Telegram Channels Tracked
 
-* 🔁 Add scheduler (e.g., Airflow or cron)
-* 📊 Add dashboard (e.g., Metabase, Superset)
-* ⚙️ REST API for accessing structured data
-* 🧹 Add advanced NLP cleaning and deduplication
+* `@lobelia4cosmetics`
+* `@tikvahpharma`
+* `@zapharmaofficial`
+* `@manekapharma`
+* `@addispharma`
+
+---
+
+## 🧠 Future Enhancements
+
+* 🔔 Real-time alerts for new products
+* 📊 BI Dashboard (Metabase / Grafana)
+* 🧼 Anomaly detection and NER (drug names, brands)
+* 🎯 **Object-specific trends** from YOLOv8 detections (🆕)
+* 📦 Auto-tagging and media classification using AI
 
 ---
 
 ## 📄 License
 
-MIT License. See `LICENSE` for details.
+MIT License. See [`LICENSE`](./LICENSE) file for details.
 
 ---
 
-## 👨‍💻 Author
+## 👤 Author
 
 **Dagmawi Ayenew**
-GitHub: [Dagiayy](https://github.com/Dagiayy)
+🔗 [GitHub](https://github.com/Dagiayy)
 
-```
+````
+
+---
+
+### ✅ Suggested Commit Message for README Update:
+
+```bash
+git add README.md
+git commit -m "Update README to include Task 3: YOLOv8-based object detection pipeline"
+````
