@@ -1,0 +1,53 @@
+product_name,keyword,category
+Amoxicillin,amoxicillin,antibiotic
+Amoxicillin,amoxy,antibiotic
+Ampicillin,ampicillin,antibiotic
+Cloxacillin,cloxacillin,antibiotic
+Cloxacillin,cloxa,antibiotic
+Azithromycin,azithromycin,antibiotic
+Azithromycin,zithromax,antibiotic
+Ciprofloxacin,ciprofloxacin,antibiotic
+Ciprofloxacin,cipro,antibiotic
+Doxycycline,doxycycline,antibiotic
+Metronidazole,metronidazole,antibiotic
+Metronidazole,metrogyl,antibiotic
+Metronidazole,metro,antibiotic
+Ceftriaxone,ceftriaxone,antibiotic
+Paracetamol,paracetamol,analgesic
+Paracetamol,acetaminophen,analgesic
+Ibuprofen,ibuprofen,analgesic
+Diclofenac,diclofenac,analgesic
+Tramadol,tramadol,analgesic
+Aspirin,aspirin,analgesic
+Pregabalin,pregabalin,neurological
+Pregabalin,neurolin,neurological
+Omeprazole,omeprazole,gastrointestinal
+Ranitidine,ranitidine,gastrointestinal
+Mebendazole,mebendazole,antiparasitic
+Mebendazole,vermorex,antiparasitic
+Albendazole,albendazole,antiparasitic
+Metformin,metformin,antidiabetic
+Insulin,insulin,antidiabetic
+Amlodipine,amlodipine,cardiovascular
+Losartan,losartan,cardiovascular
+Atenolol,atenolol,cardiovascular
+Salbutamol,salbutamol,respiratory
+Cetirizine,cetirizine,antihistamine
+Chlorpheniramine,chlorpheniramine,antihistamine
+Hydrocortisone,hydrocortisone,dermatological
+Betamethasone,betamethasone,dermatological
+Vitamin B-Complex,vit b-complex,vitamin
+Vitamin B-Complex,vitamin b complex,vitamin
+Vitamin C,vitamin c,vitamin
+Vitamin C,ascorbic acid,vitamin
+Vitamin E,vitamin e,vitamin
+Multivitamin,multivitamin,vitamin
+Folic Acid,folic acid,vitamin
+Ferrous Sulfate,ferrous sulfate,supplement
+Zinc Sulfate,zinc sulfate,supplement
+ORS,oral rehydration,supplement
+Glutathione,glutathione,cosmetic
+Hydroquinone,hydroquinone,cosmetic
+Retinol,retinol,cosmetic
+Sunscreen,sunscreen,cosmetic
+Petroleum Jelly,vaseline,cosmetic

@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: stg_telegram_messages
+    description: "Staging model that cleans and enriches raw.telegram_messages."
+    columns:
+      - name: message_key
+        description: "Surrogate key: stable hash of (channel, message_id), globally unique."
+        tests:
+          - not_null
+          - unique
+
+      - name: channel
+        description: "Telegram channel name."
+        tests:
+          - not_null
+
+      - name: message_id
+        description: "Telegram's own message id -- unique per channel only, not globally."
+
+      - name: message_length
+        description: "Number of characters in the message text."
+
+      - name: has_media
+        description: "True if the message has an attached photo."

@@ -11,48 +11,51 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
-  app:
+  api:
     build: .
-    container_name: kara_app
+    container_name: kara_api
     restart: on-failure
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     env_file:
       - .env
+    environment:
+      POSTGRES_HOST: postgres
     volumes:
       - .:/app
-    command: >
-      bash -c "
-        python app/scraper/scrape_telegram.py &&
-        python app/scraper/load_raw_to_pg.py &&
-        python kara_detection/detect_images.py &&
-        dbt run --project-dir kara_dbt &&
-        uvicorn api.main:app --host 0.0.0.0 --port 8000
-      "
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
 
   dagster:
+    build: .
     container_name: kara_dagster
-    image: python:3.10
     restart: on-failure
-    working_dir: /app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+      DAGSTER_HOME: /app/dagster_home
     volumes:
       - .:/app
-    depends_on:
-      - postgres
-    environment:
-      DAGSTER_HOME: /app/orchestrator
-    entrypoint: >
-      bash -c "
-        pip install -r requirements.txt &&
-        dagster dev -f orchestrator/repository.py
-      "
+      - dagster_home:/app/dagster_home
+    command: dagster dev -f orchestrator/repository.py -h 0.0.0.0
     ports:
       - "3000:3000"
 
 volumes:
   pgdata:
+  dagster_home:

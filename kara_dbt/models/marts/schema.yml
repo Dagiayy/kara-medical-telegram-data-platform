@@ -2,26 +2,73 @@ version: 2
 
 models:
   - name: dim_channels
-    description: "Unique list of Telegram channels"
+    description: "One row per tracked Telegram channel."
+    columns:
+      - name: channel_id
+        description: "Surrogate key: stable hash of channel_name."
+        tests: [unique, not_null]
+      - name: channel_name
+        tests: [unique, not_null]
 
   - name: dim_dates
-    description: "Date dimension for message timestamps"
+    description: "Date dimension for message timestamps."
     columns:
       - name: date_id
-        description: "Primary key"
-        tests:
-          - unique
-          - not_null
+        description: "Primary key."
+        tests: [unique, not_null]
 
   - name: fct_messages
-    description: "Fact table containing Telegram messages"
+    description: "Fact table containing one row per Telegram message."
+    columns:
+      - name: message_id
+        description: "Surrogate key: stable hash of (channel, message_id)."
+        tests: [unique, not_null]
+      - name: channel_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_channels')
+              field: channel_id
+      - name: message_length
+        description: "Message length must be non-negative."
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "message_length >= 0"
+
+  - name: fct_image_detections
+    description: "YOLOv8 object detections, one row per detected object per image."
+    columns:
+      - name: detection_id
+        tests: [unique, not_null]
+      - name: message_id
+        tests:
+          - relationships:
+              to: ref('fct_messages')
+              field: message_id
+      - name: confidence_score
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "confidence_score between 0 and 1"
+
+  - name: fct_message_products
+    description: >
+      Bridge table linking messages to products/drugs mentioned in their
+      text, matched against seeds/product_dictionary.csv.
     columns:
       - name: message_id
         tests:
-          - unique
           - not_null
-      - name: message_length
-        description: "Message length must be > 0"
-        tests:
-          - dbt_utils.expression_is_true:
-              expression: "message_length > 0"
+          - relationships:
+              to: ref('fct_messages')
+              field: message_id
+      - name: product_name
+        tests: [not_null]
+
+seeds:
+  - name: product_dictionary
+    description: "Curated dictionary of product/drug names and keywords used to tag message mentions."
+    columns:
+      - name: product_name
+        tests: [not_null]
+      - name: keyword
+        tests: [not_null]

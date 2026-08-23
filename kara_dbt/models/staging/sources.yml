@@ -1,0 +1,30 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Operational tables written directly by the Python jobs
+      (app.scraper.load_raw_to_pg, kara_detection.detect_images). dbt only
+      ever reads from this schema, never writes to it.
+    schema: raw
+    tables:
+      - name: telegram_messages
+        description: "One row per scraped Telegram message, upserted on (channel, message_id)."
+        loaded_at_field: ingested_at
+        freshness:
+          warn_after: {count: 26, period: hour}
+          error_after: {count: 72, period: hour}
+        columns:
+          - name: channel
+            tests: [not_null]
+          - name: message_id
+            tests: [not_null]
+
+      - name: images
+        description: "Photo attachments queued for / processed by YOLO detection."
+        columns:
+          - name: image_id
+            tests: [not_null, unique]
+
+      - name: image_detections
+        description: "YOLOv8 detection results, one row per detected object per image."

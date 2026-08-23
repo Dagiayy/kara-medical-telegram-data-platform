@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Unit tests
+        env:
+          TELEGRAM_API_ID: "12345"
+          TELEGRAM_API_HASH: "ci_test_hash"
+          POSTGRES_PASSWORD: "ci_test_password"
+        run: pytest --cov=app --cov=api --cov=kara_detection --cov-report=term-missing
+
+  dbt-build:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: kara_db
+          POSTGRES_USER: karauser
+          POSTGRES_PASSWORD: ci_test_password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U karauser -d kara_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: kara_db
+      POSTGRES_USER: karauser
+      POSTGRES_PASSWORD: ci_test_password
+      DBT_PROFILES_DIR: kara_dbt
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install dbt
+        run: pip install dbt-core dbt-postgres
+
+      - name: Apply raw schema
+        run: PGPASSWORD=$POSTGRES_PASSWORD psql -h localhost -U $POSTGRES_USER -d $POSTGRES_DB -f docker/postgres/init.sql
+
+      - name: Prepare dbt profile
+        run: cp kara_dbt/profiles.yml.example kara_dbt/profiles.yml
+
+      - name: dbt deps
+        run: dbt deps --project-dir kara_dbt
+
+      - name: dbt seed
+        run: dbt seed --project-dir kara_dbt
+
+      - name: dbt run
+        run: dbt run --project-dir kara_dbt
+
+      - name: dbt test
+        run: dbt test --project-dir kara_dbt

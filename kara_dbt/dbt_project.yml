@@ -24,3 +24,7 @@ models:
     marts:
       +schema: analytics
       +materialized: table
+
+seeds:
+  kara_dbt:
+    +schema: staging

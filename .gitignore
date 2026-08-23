@@ -196,6 +196,16 @@ cython_debug/
 #  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
-.cursorindexingignorev e c t o r _ s t o r e / 
- 
+.cursorindexingignore
+
+# Project-specific
+.venv/
+logs/
+*.session
+*.session-journal
+.scrape_state.json
+data_lake/raw/
+!data_lake/raw/.gitkeep
+kara_dbt/profiles.yml
+
  

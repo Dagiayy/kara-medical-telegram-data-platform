@@ -1,0 +1,17 @@
+.git
+.env
+.env.*
+!.env.example
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+.venv
+venv
+logs
+data_lake/raw
+kara_dbt/target
+kara_dbt/dbt_packages
+kara_dbt/logs
+dagster_home
+*.session
