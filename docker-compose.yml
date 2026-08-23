@@ -1,0 +1,58 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: kara_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    container_name: kara_app
+    restart: on-failure
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    command: >
+      bash -c "
+        python app/scraper/scrape_telegram.py &&
+        python app/scraper/load_raw_to_pg.py &&
+        python kara_detection/detect_images.py &&
+        dbt run --project-dir kara_dbt &&
+        uvicorn api.main:app --host 0.0.0.0 --port 8000
+      "
+    ports:
+      - "8000:8000"
+
+  dagster:
+    container_name: kara_dagster
+    image: python:3.10
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+    environment:
+      DAGSTER_HOME: /app/orchestrator
+    entrypoint: >
+      bash -c "
+        pip install -r requirements.txt &&
+        dagster dev -f orchestrator/repository.py
+      "
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
