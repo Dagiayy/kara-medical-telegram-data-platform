@@ -1,3 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kara-medical-telegram-data-platform"
+version = "1.0.0"
+description = "Telegram ETL pipeline, YOLOv8 medical image detection, dbt warehouse, & FastAPI analytics platform"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Dagmawi Ayenew", email = "ayenewdagmawi@gmail.com" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/Dagiayy/kara-medical-telegram-data-platform"
+Repository = "https://github.com/Dagiayy/kara-medical-telegram-data-platform.git"
+Issues = "https://github.com/Dagiayy/kara-medical-telegram-data-platform/issues"
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
