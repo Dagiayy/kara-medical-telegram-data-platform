@@ -33,7 +33,7 @@ models:
         description: "Message length must be non-negative."
         tests:
           - dbt_utils.expression_is_true:
-              expression: "message_length >= 0"
+              expression: ">= 0"
 
   - name: fct_image_detections
     description: "YOLOv8 object detections, one row per detected object per image."
@@ -48,7 +48,7 @@ models:
       - name: confidence_score
         tests:
           - dbt_utils.expression_is_true:
-              expression: "confidence_score between 0 and 1"
+              expression: "between 0 and 1"
 
   - name: fct_message_products
     description: >
