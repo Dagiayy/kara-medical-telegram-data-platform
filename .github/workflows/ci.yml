@@ -25,7 +25,7 @@ jobs:
       - name: Unit tests
         env:
           TELEGRAM_API_ID: "12345"
-          TELEGRAM_API_HASH: "ci_test_hash"
+          TELEGRAM_API_HASH: "test_hash"
           POSTGRES_PASSWORD: "ci_test_password"
         run: pytest --cov=app --cov=api --cov=kara_detection --cov-report=term-missing
 
